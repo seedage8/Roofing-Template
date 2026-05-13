@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SkyLine Roofing Co.</title>
+    <style>
+      *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+      :root {
+        --white: #f5f5f7;
+        --dim: rgba(255,255,255,0.45);
+        --faint: rgba(255,255,255,0.07);
+        --border: rgba(255,255,255,0.09);
+      }
+
+      html { scroll-behavior: smooth; }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        background: #080808;
+        color: var(--white);
+        overflow-x: hidden;
+      }
+
+      /* ── CURSOR GLOW ── */
+      .cursor-glow {
+        position: fixed;
+        width: 480px; height: 480px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(255,255,255,0.03) 0%, transparent 70%);
+        pointer-events: none;
+        transform: translate(-50%, -50%);
+        transition: left 0.18s ease, top 0.18s ease;
+        z-index: 0;
+      }
+
+      /* ── NOISE GRAIN OVERLAY ── */
+      body::before {
+        content: "";
+        position: fixed; inset: 0; z-index: 1;
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter
+  id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect
+  width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+        pointer-events: none; opacity: 0.4;
+      }
+
+      /* ── KEYFRAMES ── */
+      @keyframes fadeUp {
+        from { opacity: 0; transform: translateY(40px); }
+        to   { opacity: 1; transform: translateY(0); }
+      }
+      @keyframes fadeIn {
+        from { opacity: 0; } to { opacity: 1; }
+      }
+      @keyframes pulseGlow {
+        0%, 100% { opacity: 0.4; transform: translateX(-50%) scale(1); }
+        50%       { opacity: 0.7; transform: translateX(-50%) scale(1.12); }
+      }
+      @keyframes lineGrow {
+        from { transform: scaleX(0); }
+        to   { transform: scaleX(1); }
+      }
+      @keyframes countUp {
+        from { opacity: 0; transform: translateY(16px); }
+        to   { opacity: 1; transform: translateY(0); }
+      }
+      @keyframes cardShine {
+        0%   { background-position: -200% 0; }
+        100% { background-position: 200% 0; }
+      }
+      @keyframes rotateSlow {
+        from { transform: rotate(0deg); }
+        to   { transform: rotate(360deg); }
+      }
+      @keyframes dash {
+        to { stroke-dashoffset: 0; }
+      }
+      @keyframes navSlide {
+        from { opacity: 0; transform: translateY(-100%); }
+        to   { opacity: 1; transform: translateY(0); }
+      }
+
+      /* ── NAV ── */
+      nav {
+        position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+        background: rgba(8,8,8,0.7);
+        backdrop-filter: blur(32px) saturate(200%);
+        -webkit-backdrop-filter: blur(32px) saturate(200%);
+        border-bottom: 1px solid var(--border);
+        padding: 18px 48px;
+        display: flex; align-items: center; justify-content: space-between;
+        animation: navSlide 0.7s cubic-bezier(0.22,1,0.36,1) both;
+      }
+      .logo {
+        font-size: 17px; font-weight: 700; letter-spacing: -0.3px;
+        color: #fff; display: flex; align-items: center; gap: 10px;
+      }
+      .logo-mark {
+        width: 28px; height: 28px;
+        border: 1.5px solid rgba(255,255,255,0.6);
+        border-radius: 7px;
+        display: flex; align-items: center; justify-content: center;
+      }
+      .logo-mark svg { display: block; }
+      .nav-right { display: flex; align-items: center; gap: 28px; }
+      .nav-link {
+        font-size: 13px; font-weight: 500; color: var(--dim);
+        text-decoration: none; letter-spacing: 0.01em;
+        transition: color 0.2s;
+      }
+      .nav-link:hover { color: #fff; }
+      .nav-cta {
+        background: #fff; color: #000;
+        padding: 9px 22px; border-radius: 980px;
+        font-size: 13px; font-weight: 700;
+        text-decoration: none;
+        box-shadow: 0 0 0 1px rgba(255,255,255,0.2), 0 0 24px rgba(255,255,255,0.1);
+        transition: box-shadow 0.3s, transform 0.2s;
+        position: relative; overflow: hidden;
+      }
+      .nav-cta::after {
+        content: "";
+        position: absolute; top: 0; left: -100%;
+        width: 60%; height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+        transition: left 0.4s ease;
+      }
+      .nav-cta:hover::after { left: 140%; }
+      .nav-cta:hover {
+        box-shadow: 0 0 0 1px rgba(255,255,255,0.4), 0 0 40px rgba(255,255,255,0.22);
+        transform: scale(1.04);
+      }
+
+      /* ── HERO ── */
+      .hero {
+        min-height: 100vh;
+        display: flex; flex-direction: column;
+        align-items: center; justify-content: center;
+        text-align: center;
+        padding: 140px 24px 100px;
+        position: relative; overflow: hidden;
+      }
+      .hero-orb {
+        position: absolute; top: -10%; left: 50%;
+        width: 900px; height: 600px;
+        background: radial-gradient(ellipse, rgba(255,255,255,0.055) 0%, transparent 65%);
+        transform: translateX(-50%);
+        animation: pulseGlow 7s ease-in-out infinite;
+        pointer-events: none;
+      }
+      .hero-grid {
+        position: absolute; inset: 0;
+        background-image:
+          linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+        background-size: 64px 64px;
+        mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, black 0%, transparent 75%);
+        pointer-events: none;
+      }
+      .hero-eyebrow {
+        display: inline-flex; align-items: center; gap: 8px;
+        font-size: 11px; font-weight: 600; letter-spacing: 0.2em;
+        text-transform: uppercase; color: rgba(255,255,255,0.38);
+        border: 1px solid rgba(255,255,255,0.1);
+        padding: 7px 16px; border-radius: 980px;
+        margin-bottom: 36px;
+        animation: fadeUp 0.9s 0.1s ease both;
+        background: rgba(255,255,255,0.03);
+      }
+      .eyebrow-dot {
+        width: 5px; height: 5px; border-radius: 50%;
+        background: rgba(255,255,255,0.45);
+      }
+      .hero h1 {
+        font-size: clamp(44px, 8.5vw, 92px);
+        font-weight: 800; letter-spacing: -3px; line-height: 1.04;
+        background: linear-gradient(170deg, #ffffff 30%, rgba(255,255,255,0.4) 100%);
+        -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        max-width: 920px; margin-bottom: 28px;
+        animation: fadeUp 0.9s 0.2s ease both;
+      }
+      .hero p {
+        font-size: clamp(15px, 1.8vw, 19px);
+        color: rgba(255,255,255,0.42);
+        max-width: 520px; line-height: 1.75; margin-bottom: 52px;
+        animation: fadeUp 0.9s 0.32s ease both;
+      }
+      .hero-buttons {
+        display: flex; gap: 12px; flex-wrap: wrap; justify-content: center;
+        animation: fadeUp 0.9s 0.44s ease both;
+      }
+      .btn-primary {
+        background: #fff; color: #000;
+        padding: 15px 34px; border-radius: 980px;
+        font-size: 15px; font-weight: 700;
+        text-decoration: none; letter-spacing: -0.2px;
+        box-shadow: 0 0 40px rgba(255,255,255,0.16), inset 0 1px 0 rgba(255,255,255,1);
+        transition: box-shadow 0.35s, transform 0.2s;
+        display: flex; align-items: center; gap: 9px;
+        position: relative; overflow: hidden;
+      }
+      .btn-primary::after {
+        content: "";
+        position: absolute; top: 0; left: -100%;
+        width: 60%; height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent);
+        transition: left 0.45s ease;
+      }
+      .btn-primary:hover::after { left: 140%; }
+      .btn-primary:hover {
+        box-shadow: 0 0 60px rgba(255,255,255,0.32), inset 0 1px 0 rgba(255,255,255,1);
+        transform: scale(1.05) translateY(-2px);
+      }
+      .btn-secondary {
+        background: rgba(255,255,255,0.06);
+        border: 1px solid rgba(255,255,255,0.13);
+        color: rgba(255,255,255,0.85); backdrop-filter: blur(12px);
+        padding: 15px 34px; border-radius: 980px;
+        font-size: 15px; font-weight: 600;
+        text-decoration: none; letter-spacing: -0.2px;
+        transition: background 0.25s, transform 0.2s, border-color 0.25s;
+        display: flex; align-items: center; gap: 9px;
+      }
+      .btn-secondary:hover {
+        background: rgba(255,255,255,0.11);
+        border-color: rgba(255,255,255,0.22);
+        transform: scale(1.05) translateY(-2px);
+      }
+
+      /* ── TRUST BAR ── */
+      .trust {
+        position: relative; z-index: 2;
+        border-top: 1px solid var(--border);
+        border-bottom: 1px solid var(--border);
+        padding: 36px 40px;
+        display: flex; justify-content: center; gap: 72px; flex-wrap: wrap;
+      }
+      .trust-item { text-align: center; }
+      .trust-num {
+        font-size: 34px; font-weight: 800; letter-spacing: -1.5px;
+        background: linear-gradient(135deg, #fff 0%, rgba(255,255,255,0.5) 100%);
+        -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        line-height: 1;
+      }
+      .trust-label {
+        font-size: 11px; color: rgba(255,255,255,0.28);
+        text-transform: uppercase; letter-spacing: 0.14em; margin-top: 5px;
+      }
+      .trust-divider {
+        width: 1px; background: var(--border); align-self: stretch;
+      }
+
+      /* ── SECTION BASE ── */
+      .section { padding: 110px 24px; max-width: 1080px; margin: 0 auto; position: relative; z-index: 2; }
+      .tag {
+        display: inline-flex; align-items: center; gap: 7px;
+        font-size: 11px; font-weight: 600; letter-spacing: 0.18em;
+        text-transform: uppercase; color: rgba(255,255,255,0.28);
+        margin-bottom: 20px;
+      }
+      .tag-line {
+        display: inline-block; width: 20px; height: 1px;
+        background: rgba(255,255,255,0.25);
+      }
+      .section-title {
+        font-size: clamp(30px, 4.5vw, 50px); font-weight: 800;
+        letter-spacing: -1.5px; line-height: 1.08;
+        background: linear-gradient(140deg, #fff 0%, rgba(255,255,255,0.45) 100%);
+        -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        margin-bottom: 60px; max-width: 560px;
+      }
+
+      /* ── SERVICES ── */
+      .services-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 2px;
+      }
+      @media (max-width: 640px) { .services-grid { grid-template-columns: 1fr; } }
+
+      .service-card {
+        background: rgba(255,255,255,0.03);
+        border: 1px solid var(--border);
+        border-radius: 0; padding: 40px 36px;
+        position: relative; overflow: hidden;
+        transition: background 0.3s;
+      }
+      .service-card:first-child { border-radius: 20px 0 0 0; }
+      .service-card:nth-child(2) { border-radius: 0 20px 0 0; }
+      .service-card:nth-child(3) { border-radius: 0 0 0 20px; }
+      .service-card:last-child { border-radius: 0 0 20px 0; }
+
+      .service-card::before {
+        content: "";
+        position: absolute; inset: 0;
+        background: linear-gradient(135deg, rgba(255,255,255,0.06) 0%, transparent 60%);
+        opacity: 0; transition: opacity 0.35s;
+      }
+      .service-card:hover { background: rgba(255,255,255,0.055); }
+      .service-card:hover::before { opacity: 1; }
+
+      .service-card::after {
+        content: "";
+        position: absolute; top: 0; left: -200%;
+        width: 80%; height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.04), transparent);
+        transition: left 0.6s ease;
+      }
+      .service-card:hover::after { left: 200%; }
+
+      .svc-icon {
+        width: 44px; height: 44px; margin-bottom: 22px;
+        color: rgba(255,255,255,0.7);
+      }
+      .service-card h3 {
+        font-size: 17px; font-weight: 700; margin-bottom: 10px;
+        color: #fff; letter-spacing: -0.3px;
+      }
+      .service-card p { font-size: 14px; color: rgba(255,255,255,0.38); line-height: 1.75; }
+
+      /* ── PROCESS STRIP ── */
+      .process-strip {
+        border-top: 1px solid var(--border);
+        border-bottom: 1px solid var(--border);
+        padding: 72px 24px;
+        background: rgba(255,255,255,0.015);
+        position: relative; z-index: 2;
+      }
+      .process-inner { max-width: 1080px; margin: 0 auto; }
+      .process-steps {
+        display: grid; grid-template-columns: repeat(4, 1fr);
+        gap: 0; margin-top: 52px;
+        position: relative;
+      }
+      .process-steps::before {
+        content: "";
+        position: absolute; top: 22px; left: 12.5%; right: 12.5%;
+        height: 1px; background: var(--border);
+      }
+      .process-step { text-align: center; padding: 0 16px; }
+      .step-num {
+        width: 44px; height: 44px; border-radius: 50%;
+        border: 1px solid rgba(255,255,255,0.14);
+        background: rgba(255,255,255,0.05);
+        display: flex; align-items: center; justify-content: center;
+        margin: 0 auto 18px;
+        font-size: 13px; font-weight: 700; color: rgba(255,255,255,0.6);
+        backdrop-filter: blur(8px);
+        position: relative; z-index: 1;
+      }
+      .process-step h4 {
+        font-size: 14px; font-weight: 700; color: #fff; margin-bottom: 7px;
+      }
+      .process-step p { font-size: 12px; color: rgba(255,255,255,0.32); line-height: 1.65; }
+      @media (max-width: 640px) {
+        .process-steps { grid-template-columns: repeat(2, 1fr); gap: 32px; }
+        .process-steps::before { display: none; }
+      }
+
+      /* ── REVIEWS ── */
+      .reviews-section {
+        padding: 110px 24px;
+        position: relative; z-index: 2;
+      }
+      .reviews-inner { max-width: 1080px; margin: 0 auto; }
+      .reviews-grid {
+        display: grid; grid-template-columns: repeat(3, 1fr);
+        gap: 16px; margin-top: 60px;
+      }
+      @media (max-width: 800px) { .reviews-grid { grid-template-columns: 1fr; } }
+
+      .review-card {
+        background: rgba(255,255,255,0.03);
+        border: 1px solid var(--border);
+        border-radius: 20px; padding: 32px 28px;
+        position: relative; overflow: hidden;
+        transition: transform 0.35s cubic-bezier(0.22,1,0.36,1), box-shadow 0.35s, border-color 0.3s;
+      }
+      .review-card::before {
+        content: "";
+        position: absolute; top: 0; left: 0; right: 0; height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent);
+      }
+      .review-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 24px 64px rgba(0,0,0,0.6);
+        border-color: rgba(255,255,255,0.15);
+      }
+      .quote-mark {
+        font-size: 56px; line-height: 1; color: rgba(255,255,255,0.07);
+        font-family: Georgia, serif; margin-bottom: 4px; margin-top: -8px;
+      }
+      .review-card p {
+        font-size: 14px; color: rgba(255,255,255,0.6);
+        line-height: 1.8; margin-bottom: 24px;
+      }
+      .review-footer { display: flex; align-items: center; justify-content: space-between; }
+      .reviewer { font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.3); }
+      .stars {
+        display: flex; gap: 2px;
+      }
+      .stars svg { width: 12px; height: 12px; fill: #FFD60A; }
+
+      /* ── CONTACT ── */
+      .contact-section {
+        padding: 120px 24px;
+        text-align: center;
+        position: relative; overflow: hidden; z-index: 2;
+      }
+      .contact-orb {
+        position: absolute; bottom: -30%; left: 50%;
+        width: 800px; height: 500px;
+        background: radial-gradient(ellipse, rgba(255,255,255,0.04) 0%, transparent 65%);
+        transform: translateX(-50%);
+        pointer-events: none;
+        animation: pulseGlow 8s 1s ease-in-out infinite;
+      }
+      .contact-inner { max-width: 580px; margin: 0 auto; position: relative; }
+      .contact-section .section-title { margin: 0 auto 18px; }
+      .contact-sub {
+        font-size: 16px; color: rgba(255,255,255,0.38);
+        line-height: 1.8; margin-bottom: 52px; max-width: 400px; margin-left: auto; margin-right: auto;
+      }
+      .contact-buttons {
+        display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;
+      }
+      .btn-call {
+        background: #fff; color: #000;
+        padding: 17px 42px; border-radius: 980px;
+        font-size: 16px; font-weight: 700; letter-spacing: -0.2px;
+        text-decoration: none; display: flex; align-items: center; gap: 10px;
+        box-shadow: 0 0 40px rgba(255,255,255,0.18), inset 0 1px 0 #fff;
+        transition: box-shadow 0.35s, transform 0.2s;
+        position: relative; overflow: hidden;
+      }
+      .btn-call::after {
+        content: "";
+        position: absolute; top: 0; left: -100%;
+        width: 60%; height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent);
+        transition: left 0.45s ease;
+      }
+      .btn-call:hover::after { left: 140%; }
+      .btn-call:hover {
+        box-shadow: 0 0 64px rgba(255,255,255,0.35), inset 0 1px 0 #fff;
+        transform: scale(1.05) translateY(-2px);
+      }
+      .btn-sms {
+        background: rgba(255,255,255,0.06);
+        border: 1px solid rgba(255,255,255,0.13);
+        color: rgba(255,255,255,0.85); backdrop-filter: blur(12px);
+        padding: 17px 42px; border-radius: 980px;
+        font-size: 16px; font-weight: 600; letter-spacing: -0.2px;
+        text-decoration: none; display: flex; align-items: center; gap: 10px;
+        transition: background 0.25s, transform 0.2s, border-color 0.25s;
+      }
+      .btn-sms:hover {
+        background: rgba(255,255,255,0.11);
+        border-color: rgba(255,255,255,0.22);
+        transform: scale(1.05) translateY(-2px);
+      }
+
+      /* ── FOOTER ── */
+      footer {
+        border-top: 1px solid var(--border);
+        padding: 28px 48px;
+        display: flex; justify-content: space-between; align-items: center;
+        flex-wrap: wrap; gap: 12px; position: relative; z-index: 2;
+      }
+      footer p { font-size: 12px; color: rgba(255,255,255,0.18); letter-spacing: 0.02em; }
+
+      /* ── SCROLL REVEAL ── */
+      .reveal {
+        opacity: 0; transform: translateY(36px);
+        transition: opacity 0.8s cubic-bezier(0.22,1,0.36,1), transform 0.8s cubic-bezier(0.22,1,0.36,1);
+      }
+      .reveal.visible { opacity: 1; transform: translateY(0); }
+      .reveal-delay-1 { transition-delay: 0.1s; }
+      .reveal-delay-2 { transition-delay: 0.2s; }
+      .reveal-delay-3 { transition-delay: 0.3s; }
+
+      @media (max-width: 600px) {
+        nav { padding: 16px 20px; }
+        .nav-right .nav-link { display: none; }
+        .trust { gap: 24px; padding: 28px 20px; }
+        .trust-divider { display: none; }
+        footer { flex-direction: column; text-align: center; padding: 24px 20px; }
+      }
+    </style>
+  </head>
+  <body>
+
+    <div class="cursor-glow" id="cursorGlow"></div>
+
+    <!-- NAV -->
+    <nav>
+      <div class="logo">
+        <div class="logo-mark">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <path d="M7 1L13 5V9L7 13L1 9V5L7 1Z" stroke="white" stroke-width="1.2" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        SkyLine Roofing
+      </div>
+      <div class="nav-right">
+        <a href="#services" class="nav-link">Services</a>
+        <a href="#reviews" class="nav-link">Reviews</a>
+        <a href="#contact" class="nav-link">Contact</a>
+        <a href="tel:8005557663" class="nav-cta">Free Estimate</a>
+      </div>
+    </nav>
+
+    <!-- HERO -->
+    <section class="hero">
+      <div class="hero-orb"></div>
+      <div class="hero-grid"></div>
+      <div class="hero-eyebrow">
+        <span class="eyebrow-dot"></span>
+        Licensed &amp; Insured &nbsp;·&nbsp; Dallas, TX
+      </div>
+      <h1>Your Roof.<br/>Done Right.<br/>Done Once.</h1>
+      <p>Premium roofing installations, repairs, and replacements. We protect what matters most — your home and your family.</p>
+      <div class="hero-buttons">
+        <a href="tel:8005557663" class="btn-primary">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+   stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0
+  1 1.61 3.38 2 2 0 0 1 3.6 1.21h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.82a16 16 0 0 0 6 6l.95-.95a2 2
+   0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+          Call Now
+        </a>
+        <a href="sms:8005557663" class="btn-secondary">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+   stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          Text Us
+        </a>
+      </div>
+    </section>
+
+    <!-- TRUST BAR -->
+    <div class="trust">
+      <div class="trust-item reveal">
+        <div class="trust-num">1,200+</div>
+        <div class="trust-label">Roofs Completed</div>
+      </div>
+      <div class="trust-divider"></div>
+      <div class="trust-item reveal reveal-delay-1">
+        <div class="trust-num">14 Yrs</div>
+        <div class="trust-label">In Business</div>
+      </div>
+      <div class="trust-divider"></div>
+      <div class="trust-item reveal reveal-delay-2">
+        <div class="trust-num">4.9★</div>
+        <div class="trust-label">Google Rating</div>
+      </div>
+      <div class="trust-divider"></div>
+      <div class="trust-item reveal reveal-delay-3">
+        <div class="trust-num">24/7</div>
+        <div class="trust-label">Emergency Service</div>
+      </div>
+    </div>
+
+    <!-- SERVICES -->
+    <div class="section" id="services">
+      <div class="tag reveal"><span class="tag-line"></span> What We Do</div>
+      <div class="section-title reveal">Every roofing service<br/>you'll ever need.</div>
+      <div class="services-grid">
+        <div class="service-card reveal">
+          <svg class="svc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+  stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          <h3>Roof Replacement</h3>
+          <p>Full tear-off and replacement with premium materials. Lifetime workmanship warranty included on every job.</p>
+        </div>
+        <div class="service-card reveal reveal-delay-1">
+          <svg class="svc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+  stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19
+   12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
+          <h3>Roof Repair</h3>
+          <p>Leaks, missing shingles, storm damage — we diagnose fast and fix it to last. No patch jobs, only real solutions.</p>
+        </div>
+        <div class="service-card reveal reveal-delay-1">
+          <svg class="svc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+  stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5
+   0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+          <h3>Storm Damage</h3>
+          <p>We work directly with your insurance company to get your claim approved and maximize your coverage.</p>
+        </div>
+        <div class="service-card reveal reveal-delay-2">
+          <svg class="svc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+  stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <h3>Free Inspection</h3>
+          <p>No commitment, no pressure. A licensed inspector assesses your roof and delivers a detailed quote in 24 hours.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROCESS -->
+    <div class="process-strip">
+      <div class="process-inner">
+        <div class="tag reveal"><span class="tag-line"></span> How It Works</div>
+        <div class="section-title reveal" style="margin-bottom: 0;">Simple from start to finish.</div>
+        <div class="process-steps">
+          <div class="process-step reveal">
+            <div class="step-num">01</div>
+            <h4>Free Inspection</h4>
+            <p>We come to you. No cost, no obligation, within 24 hours.</p>
+          </div>
+          <div class="process-step reveal reveal-delay-1">
+            <div class="step-num">02</div>
+            <h4>Detailed Quote</h4>
+            <p>Itemized pricing — no surprises, no hidden fees.</p>
+          </div>
+          <div class="process-step reveal reveal-delay-2">
+            <div class="step-num">03</div>
+            <h4>We Get to Work</h4>
+            <p>Most jobs completed in a single day by our crew.</p>
+          </div>
+          <div class="process-step reveal reveal-delay-3">
+            <div class="step-num">04</div>
+            <h4>Final Walkthrough</h4>
+            <p>You inspect the work. We don't leave until you're satisfied.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- REVIEWS -->
+    <div class="reviews-section" id="reviews">
+      <div class="reviews-inner">
+        <div class="tag reveal"><span class="tag-line"></span> What People Say</div>
+        <div class="section-title reveal">Trusted by homeowners<br/>across Dallas.</div>
+        <div class="reviews-grid">
+          <div class="review-card reveal">
+            <div class="quote-mark">"</div>
+            <p>SkyLine replaced our entire roof after the hailstorm. Professional, fast, and they handled everything with our
+  insurance. Couldn't be happier.</p>
+            <div class="review-footer">
+              <div class="reviewer">Michael T. — Dallas, TX</div>
+              <div class="stars">
+                <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2
+  9.27l6.91-1.01L12 2z"/></svg>
+                <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2
+  9.27l6.91-1.01L12 2z"/></svg>
+                <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2
+  9.27l6.91-1.01L12 2z"/></svg>
+                <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2
+  9.27l6.91-1.01L12 2z"/></svg>
+                <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2
+  9.27l6.91-1.01L12 2z"/></svg>
+              </div>
+            </div>
+          </div>
+          <div class="review-card reveal reveal-delay-1">
+            <div class="quote-mark">"</div>
+            <p>Called at 9pm about a leak and they had someone out by 8am the next morning. Incredible response time. Will never use
+  anyone else.</p>
+            <div class="review-footer">
+              <div class="reviewer">Sandra R. — Plano, TX</div>
+              <div class="stars">
+                <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2
+  9.27l6.91-1.01L12 2z"/></svg>
+                <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2
+  9.27l6.91-1.01L12 2z"/></svg>
+                <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2
+  9.27l6.91-1.01L12 2z"/></svg>
+                <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2
+  9.27l6.91-1.01L12 2z"/></svg>
+                <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2
+  9.27l6.91-1.01L12 2z"/></svg>
+              </div>
+            </div>
+          </div>
+          <div class="review-card reveal reveal-delay-2">
+            <div class="quote-mark">"</div>
+            <p>Fair price, clean work, done in one day. They cleaned up better than they found it. I've already referred three
+  neighbors.</p>
+            <div class="review-footer">
+              <div class="reviewer">James K. — Frisco, TX</div>
+              <div class="stars">
+                <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2
+  9.27l6.91-1.01L12 2z"/></svg>
+                <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2
+  9.27l6.91-1.01L12 2z"/></svg>
+                <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2
+  9.27l6.91-1.01L12 2z"/></svg>
+                <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2
+  9.27l6.91-1.01L12 2z"/></svg>
+                <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2
+  9.27l6.91-1.01L12 2z"/></svg>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONTACT -->
+    <div class="contact-section" id="contact">
+      <div class="contact-orb"></div>
+      <div class="contact-inner">
+        <div class="tag reveal" style="justify-content:center;"><span class="tag-line"></span> Get In Touch</div>
+        <div class="section-title reveal" style="margin: 0 auto 18px;">Ready for your<br/>free estimate?</div>
+        <p class="contact-sub reveal">No pressure, no commitment. Call or text — we respond within the hour.</p>
+        <div class="contact-buttons reveal">
+          <a href="tel:8005557663" class="btn-call">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+  stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1
+  4.69 12 19.79 19.79 0 0 1 1.61 3.38 2 2 0 0 1 3.6 1.21h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.82a16
+  16 0 0 0 6 6l.95-.95a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+            Call Now
+          </a>
+          <a href="sms:8005557663" class="btn-sms">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+  stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            Text Us
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer>
+      <p>© 2026 SkyLine Roofing Co. &nbsp;·&nbsp; Dallas, TX &nbsp;·&nbsp; Licensed &amp; Insured</p>
+      <p>(800) 555-ROOF</p>
+    </footer>
+
+    <script>
+      // Cursor glow
+      const glow = document.getElementById('cursorGlow');
+      document.addEventListener('mousemove', e => {
+        glow.style.left = e.clientX + 'px';
+        glow.style.top  = e.clientY + 'px';
+      });
+
+      // Scroll reveal
+      const reveals = document.querySelectorAll('.reveal');
+      const obs = new IntersectionObserver(entries => {
+        entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); } });
+      }, { threshold: 0.1 });
+      reveals.forEach(el => obs.observe(el));
+    </script>
+
+  </body>
+  </html>
